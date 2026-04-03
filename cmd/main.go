@@ -31,6 +31,7 @@ import (
 
 	api_translation "github.com/opendatahub-io/ai-gateway-payload-processing/pkg/plugins/api-translation"
 	apikey_injection "github.com/opendatahub-io/ai-gateway-payload-processing/pkg/plugins/apikey-injection"
+	bodyfieldtoheader "github.com/opendatahub-io/ai-gateway-payload-processing/pkg/plugins/body-field-to-header"
 	provider_resolver "github.com/opendatahub-io/ai-gateway-payload-processing/pkg/plugins/model-provider-resolver"
 	nemo "github.com/opendatahub-io/ai-gateway-payload-processing/pkg/plugins/nemo"
 )
@@ -48,6 +49,11 @@ func main() {
 }
 
 func registerPlugins() {
+	// Override upstream body-field-to-header to skip gracefully when the field is missing,
+	// instead of returning 400. This is needed because the ext_proc filter processes all
+	// gateway traffic, including non-inference requests without a "model" field.
+	framework.Register(bodyfieldtoheader.BodyFieldToHeaderPluginType, bodyfieldtoheader.BodyFieldToHeaderPluginFactory)
+
 	framework.Register(provider_resolver.ModelProviderResolverPluginType, provider_resolver.ModelProviderResolverFactory)
 	framework.Register(api_translation.APITranslationPluginType, api_translation.APITranslationFactory)
 	framework.Register(apikey_injection.APIKeyInjectionPluginType, apikey_injection.APIKeyInjectionFactory)
