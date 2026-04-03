@@ -244,12 +244,30 @@ func TestProcessRequest_NilRequest(t *testing.T) {
 	assert.Contains(t, err.Error(), "non-nil")
 }
 
+func TestProcessRequest_NilBody(t *testing.T) {
+	p := NewAPITranslationPlugin()
+	req := framework.NewInferenceRequest()
+	req.Body = nil
+
+	err := p.ProcessRequest(context.Background(), framework.NewCycleState(), req)
+	assert.NoError(t, err, "nil body should skip gracefully for non-inference requests")
+}
+
 func TestProcessResponse_NilResponse(t *testing.T) {
 	p := NewAPITranslationPlugin()
 
 	err := p.ProcessResponse(context.Background(), framework.NewCycleState(), nil)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "non-nil")
+}
+
+func TestProcessResponse_NilBody(t *testing.T) {
+	p := NewAPITranslationPlugin()
+	resp := framework.NewInferenceResponse()
+	resp.Body = nil
+
+	err := p.ProcessResponse(context.Background(), framework.NewCycleState(), resp)
+	assert.NoError(t, err, "nil body should skip gracefully for non-inference responses")
 }
 
 func TestProcessResponse_Anthropic(t *testing.T) {

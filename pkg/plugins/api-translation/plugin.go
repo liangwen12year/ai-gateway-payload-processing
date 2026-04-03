@@ -85,8 +85,13 @@ func (p *APITranslationPlugin) WithName(name string) *APITranslationPlugin {
 // ProcessRequest reads the provider from CycleState (set by an upstream plugin) and translates
 // the request body from OpenAI format to the provider's native format if needed.
 func (p *APITranslationPlugin) ProcessRequest(ctx context.Context, cycleState *framework.CycleState, request *framework.InferenceRequest) error {
-	if request == nil || request.Headers == nil || request.Body == nil {
-		return fmt.Errorf("invalid inference request: request/headers/body must be non-nil")
+	if request == nil || request.Headers == nil {
+		return fmt.Errorf("invalid inference request: request/headers must be non-nil")
+	}
+
+	// Non-inference requests have no body — skip translation.
+	if request.Body == nil {
+		return nil
 	}
 
 	providerName, err := framework.ReadCycleStateKey[string](cycleState, state.ProviderKey) // err if not found
@@ -127,8 +132,13 @@ func (p *APITranslationPlugin) ProcessRequest(ctx context.Context, cycleState *f
 // ProcessResponse reads the provider from CycleState and translates the response
 // back to OpenAI Chat Completions format if needed.
 func (p *APITranslationPlugin) ProcessResponse(ctx context.Context, cycleState *framework.CycleState, response *framework.InferenceResponse) error {
-	if response == nil || response.Headers == nil || response.Body == nil {
-		return fmt.Errorf("invalid inference response: response/headers/body must be non-nil")
+	if response == nil || response.Headers == nil {
+		return fmt.Errorf("invalid inference response: response/headers must be non-nil")
+	}
+
+	// Non-inference responses have no body — skip translation.
+	if response.Body == nil {
+		return nil
 	}
 
 	providerName, err := framework.ReadCycleStateKey[string](cycleState, state.ProviderKey) // err if not found

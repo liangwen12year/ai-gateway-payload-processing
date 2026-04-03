@@ -126,8 +126,13 @@ func (p *NemoRequestGuardPlugin) WithName(name string) *NemoRequestGuardPlugin {
 func (p *NemoRequestGuardPlugin) ProcessRequest(ctx context.Context, _ *framework.CycleState, request *framework.InferenceRequest) error {
 	logger := log.FromContext(ctx)
 
-	if request == nil || request.Body == nil {
-		return errcommon.Error{Code: errcommon.Internal, Msg: "nemo-request-guard: invalid inference request: request/body must be non-nil"}
+	if request == nil {
+		return errcommon.Error{Code: errcommon.Internal, Msg: "nemo-request-guard: invalid inference request: request must be non-nil"}
+	}
+
+	// Non-inference requests have no body — nothing to guard.
+	if request.Body == nil {
+		return nil
 	}
 
 	messages, err := extractMessages(request.Body)

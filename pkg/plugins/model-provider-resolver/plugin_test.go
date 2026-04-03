@@ -94,6 +94,16 @@ func TestProcessRequest_NoModel(t *testing.T) {
 	assert.Error(t, modelErr)
 }
 
+func TestProcessRequest_NilBody(t *testing.T) {
+	store := newModelInfoStore()
+	p := &ModelProviderResolverPlugin{modelInfoStore: store}
+	req := framework.NewInferenceRequest()
+	req.Body = nil
+
+	err := p.ProcessRequest(context.Background(), framework.NewCycleState(), req)
+	assert.NoError(t, err, "nil body should skip gracefully for non-inference requests")
+}
+
 func TestProcessRequest_NilRequest(t *testing.T) {
 	store := newModelInfoStore()
 	p := &ModelProviderResolverPlugin{modelInfoStore: store}

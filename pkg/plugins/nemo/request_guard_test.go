@@ -230,6 +230,17 @@ func TestNemoRequestGuardProcessRequest(t *testing.T) {
 	}
 }
 
+func TestNemoRequestGuardNilBody(t *testing.T) {
+	p, err := NewNemoRequestGuardPlugin("http://unreachable:9999", 30)
+	require.NoError(t, err)
+
+	req := framework.NewInferenceRequest()
+	req.Body = nil
+
+	err = p.ProcessRequest(context.Background(), framework.NewCycleState(), req)
+	assert.NoError(t, err, "nil body should skip gracefully for non-inference requests")
+}
+
 // TestNemoRequestGuardSendsCorrectPayload verifies the request sent to NeMo matches the expected format.
 func TestNemoRequestGuardSendsCorrectPayload(t *testing.T) {
 	var capturedReq map[string]any
